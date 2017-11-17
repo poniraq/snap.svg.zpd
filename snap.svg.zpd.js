@@ -154,8 +154,10 @@ SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformTo
          * Instance an SVGPoint object with given event coordinates.
          */
         var _findPos = function findPos(obj) {
-          var curleft = curtop = 0;
-          var boundingClientRect = obj.getBoundingClientRect();
+          var curleft = 0,
+              curtop = 0,
+              boundingClientRect = obj.getBoundingClientRect();
+
           if (boundingClientRect) {
             curleft = boundingClientRect.left;
             curtop = boundingClientRect.top;
@@ -228,20 +230,20 @@ SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformTo
                 matrix = g.getCTM().multiply(k);
                 matrix.a = matrix.a.toFixed(4);
                 matrix.d = matrix.d.toFixed(4);
-            }
-            
+            };
+
             var threshold = zpdElement.options.zoomThreshold;
 
             if (threshold && typeof threshold === 'object') { // array [0.5,2]
                 var oldMatrix = Snap(g).transform().globalMatrix;
 
-                if (   (matrix.a < oldMatrix.a && matrix.a < threshold[0])
-                    || (matrix.d < oldMatrix.d && matrix.d < threshold[0])) {
-                    
+                if ((matrix.a < oldMatrix.a && matrix.a < threshold[0]) ||
+                    (matrix.d < oldMatrix.d && matrix.d < threshold[0])) {
+
                     recalculateMatrix(threshold[0]);
 
-                } else if (   (matrix.a > oldMatrix.a && matrix.a > threshold[1])
-                            || (matrix.d > oldMatrix.d && matrix.d > threshold[1])) {
+                } else if ((matrix.a > oldMatrix.a && matrix.a > threshold[1]) ||
+                           (matrix.d > oldMatrix.d && matrix.d > threshold[1])) {
 
                     recalculateMatrix(threshold[1]);
                 }
@@ -413,11 +415,8 @@ SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformTo
 
                     // Drag mode
                     zpdElement.data.state = 'drag';
-
                     zpdElement.data.stateTarget = event.target;
-
                     zpdElement.data.stateTf = g.getCTM().inverse();
-
                     zpdElement.data.stateOrigin = _getEventPoint(event, zpdElement.data.svg).matrixTransform(zpdElement.data.stateTf);
 
                 }
