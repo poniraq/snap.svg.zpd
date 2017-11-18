@@ -419,33 +419,38 @@ SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformTo
                     zpdElement.data.stateTf = g.getCTM().inverse();
                     zpdElement.data.stateOrigin = _getEventPoint(event, zpdElement.data.svg).matrixTransform(zpdElement.data.stateTf);
 
+                    if (typeof zpdElement.options.drag === 'object' && zpdElement.options.drag.start) {
+                        zpdElement.options.drag.start.call(this, {
+                            event: event,
+                            zpdElement: zpdElement,
+                            g: g
+                        });
+                    }
                 }
             };
 
             var handleMouseMove = function handleMouseMove (event) {
 
-                if (event.preventDefault) {
-                    event.preventDefault();
-                }
-
                 if (!snapsvgzpd.enable) return;
 
-                event.returnValue = false;
-
-                var g = zpdElement.element.node;
+                var g = zpdElement.element.node,
+                    trans_x = 0,
+                    trans_y = 0;
 
                 if (zpdElement.data.state == 'pan' && zpdElement.options.pan) {
+                    if (event.preventDefault) {
+                        event.preventDefault();
+                    }
+                    event.returnValue = false;
 
                     // Pan mode
                     var p = _getEventPoint(event, zpdElement.data.svg).matrixTransform(zpdElement.data.stateTf);
-                    
-                    var trans_x=0;
-                    var trans_y=0;
+
                     if ((zpdElement.options.panDirections == 'both') || (zpdElement.options.panDirections == 'horizontal')) {
-                      var trans_x=p.x - zpdElement.data.stateOrigin.x;
+                      trans_x = p.x - zpdElement.data.stateOrigin.x;
                     }
                     if ((zpdElement.options.panDirections == 'both') || (zpdElement.options.panDirections == 'vertical')) {
-                      var trans_y=p.y - zpdElement.data.stateOrigin.y;
+                      trans_y = p.y - zpdElement.data.stateOrigin.y;
                     }
 
                     _setCTM(g, zpdElement.data.stateTf.inverse().translate(trans_x,trans_y));
@@ -455,22 +460,37 @@ SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformTo
                     // Drag mode
                     var dragPoint = _getEventPoint(event, zpdElement.data.svg).matrixTransform(g.getCTM().inverse());
 
-                    var trans_x=0;
-                    var trans_y=0;
                     if ((zpdElement.options.panDirections == 'both') || (zpdElement.options.panDirections == 'horizontal')) {
-                      var trans_x=dragPoint.x - zpdElement.data.stateOrigin.x;
+                      trans_x = dragPoint.x - zpdElement.data.stateOrigin.x;
                     }
                     if ((zpdElement.options.panDirections == 'both') || (zpdElement.options.panDirections == 'vertical')) {
-                      var trans_y=dragPoint.y - zpdElement.data.stateOrigin.y;
+                      trans_y = dragPoint.y - zpdElement.data.stateOrigin.y;
                     }
-                    
-                    _setCTM(zpdElement.data.stateTarget,
-                            zpdElement.data.root.createSVGMatrix()
-                            .translate(trans_x, trans_y)
-                            .multiply(g.getCTM().inverse())
-                            .multiply(zpdElement.data.stateTarget.getCTM()));
 
-                    zpdElement.data.stateOrigin = dragPoint;
+                    // allows to specify a callback that'll handle dragging
+                    if (typeof zpdElement.options.drag === 'object' && zpdElement.options.drag.move) {
+                        zpdElement.options.drag.move.call(this, {
+                            zpdElement: zpdElement,
+                            dragPoint: dragPoint,
+                            trans_x: trans_x,
+                            trans_y: trans_y,
+                            event: event,
+                            setCTM: _setCTM,
+                            g: g
+                        });
+                    } else {
+                        if (event.preventDefault) {
+                            event.preventDefault();
+                        }
+                        event.returnValue = false;
+                        _setCTM(zpdElement.data.stateTarget,
+                                zpdElement.data.root.createSVGMatrix()
+                                .translate(trans_x, trans_y)
+                                .multiply(g.getCTM().inverse())
+                                .multiply(zpdElement.data.stateTarget.getCTM()));
+
+                        zpdElement.data.stateOrigin = dragPoint;
+                    }
                 }
             };
 

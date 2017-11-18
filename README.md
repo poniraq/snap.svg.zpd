@@ -80,6 +80,7 @@ paper.zpd(function (err, paper) {
 #### drag
 
     true or false: enable or disable dragging (default false)
+    object: provide your own drag handlers
 
 #### zoomScale
 
@@ -88,7 +89,7 @@ paper.zpd(function (err, paper) {
 #### zoomThreshold
 
     array: min and max zoom level threshold [min, max] (default null)
-    
+
 #### touch
 
     true or false: enable or disable touch support (default true)
